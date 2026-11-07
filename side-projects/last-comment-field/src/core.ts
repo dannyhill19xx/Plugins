@@ -8,7 +8,7 @@ export type JiraComment = {
   id: string;
   body?: AdfNode;
   created?: string;
-  author?: { displayName?: string };
+  author?: { accountId?: string; accountType?: string; displayName?: string }; // accountType: atlassian | app | customer
   visibility?: { type: string; value: string }; // group/role restriction
   jsdPublic?: boolean; // false = JSM internal note
 };
@@ -85,6 +85,24 @@ export function isPublic(c: JiraComment): boolean {
 
 export function isEligible(c: JiraComment, settings: Settings): boolean {
   return settings.includeRestricted || isPublic(c);
+}
+
+/** Who wrote a reply in a service project; stored as-is in the "Last reply by" field. */
+export type ReplyRole = 'Customer' | 'Agent';
+
+/** Reply tracking for service project issues. Dates are the comments' `created` timestamps. */
+export type Replies = {
+  lastCustomerReply: string | null;
+  lastAgentReply: string | null;
+  lastReplyBy: ReplyRole | null;
+};
+
+/**
+ * A comment is a reply when the customer can see it (not restricted, not an internal note)
+ * and a person wrote it, not an app or automation rule. Not affected by `includeRestricted`.
+ */
+export function isReply(c: JiraComment): boolean {
+  return isPublic(c) && !!c.created && !!c.author?.accountId && c.author.accountType !== 'app';
 }
 
 /** Build the field value for a comment according to settings. */

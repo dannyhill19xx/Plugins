@@ -7,6 +7,7 @@ import {
   formatValue,
   isEligible,
   isPublic,
+  isReply,
   sanitizeSettings,
   truncate,
 } from '../src/core';
@@ -52,6 +53,17 @@ test('includeRestricted makes every comment eligible', () => {
   const internal: JiraComment = { id: '3', jsdPublic: false };
   assert.equal(isEligible(internal, DEFAULT_SETTINGS), false);
   assert.equal(isEligible(internal, { ...DEFAULT_SETTINGS, includeRestricted: true }), true);
+});
+
+test('only public comments written by people are replies', () => {
+  const base: JiraComment = { id: '1', created: '2026-11-07T10:00:00.000+0700', author: { accountId: 'u1', accountType: 'atlassian' } };
+  assert.equal(isReply(base), true);
+  assert.equal(isReply({ ...base, author: { accountId: 'c1', accountType: 'customer' } }), true);
+  assert.equal(isReply({ ...base, jsdPublic: false }), false, 'internal note');
+  assert.equal(isReply({ ...base, visibility: { type: 'group', value: 'staff' } }), false, 'restricted');
+  assert.equal(isReply({ ...base, author: { accountId: 'bot', accountType: 'app' } }), false, 'automation');
+  assert.equal(isReply({ ...base, author: undefined }), false, 'no author');
+  assert.equal(isReply({ ...base, created: undefined }), false, 'no date');
 });
 
 test('formatValue adds date and author prefix when enabled', () => {

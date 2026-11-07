@@ -1,7 +1,7 @@
 import { Queue, InvocationError, InvocationErrorCode } from '@forge/events';
 import { kvs } from '@forge/kvs';
 import { Settings } from './core';
-import { RateLimitedError, computeValue, listProjectIds, searchIssueIds, writeValues } from './jira';
+import { RateLimitedError, computeValues, getProject, listProjectIds, searchIssueIds, writeIssueValues } from './jira';
 import { loadSettings } from './settings';
 
 /**
@@ -91,10 +91,10 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 }
 
 async function processPage(event: BatchEvent, settings: Settings) {
-  const projectId = event.projectIds[event.projectIndex];
-  const page = await searchIssueIds(projectId, event.nextPageToken, ISSUES_PER_BATCH);
-  const values = await mapLimit(page.issueIds, PARALLEL_COMMENT_FETCHES, (id) => computeValue(id, settings));
-  await writeValues(new Map(page.issueIds.map((id, i) => [id, values[i]])));
+  const project = await getProject(event.projectIds[event.projectIndex]);
+  const page = await searchIssueIds(project.id, event.nextPageToken, ISSUES_PER_BATCH);
+  const values = await mapLimit(page.issueIds, PARALLEL_COMMENT_FETCHES, (id) => computeValues(id, settings, project));
+  await writeIssueValues(page.issueIds.map((id, i) => [id, values[i]]));
   return { processed: page.issueIds.length, nextPageToken: page.nextPageToken };
 }
 

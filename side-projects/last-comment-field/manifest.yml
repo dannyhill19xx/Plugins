@@ -7,6 +7,22 @@ modules:
       description: Text of the most recent public comment on the issue
       type: string
       readOnly: true
+    # Service projects only: who is waiting for whom, and since when.
+    - key: last-customer-reply
+      name: Last customer reply
+      description: When the customer last replied on the request
+      type: datetime
+      readOnly: true
+    - key: last-agent-reply
+      name: Last agent reply
+      description: When an agent last replied to the customer on the request
+      type: datetime
+      readOnly: true
+    - key: last-reply-by
+      name: Last reply by
+      description: Who replied last on the request, Customer or Agent
+      type: string
+      readOnly: true
 
   trigger:
     # Recalculate the field whenever comments change.
@@ -62,4 +78,5 @@ permissions:
   scopes:
     - read:jira-work
     - write:jira-work
+    - read:jira-user # agent check: /rest/api/3/user/permission/search
     - storage:app

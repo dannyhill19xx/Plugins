@@ -26,8 +26,15 @@
 - Общий каркас: Forge, лицензирование, шаблон документации и листинга.
 - Отсечение: <~30 установок и ноль вопросов за 60 дней после релиза → заморозить.
 
-## Текущее состояние: last-comment-field v0.2 (в репозитории, ни разу не деплоилось)
+## Текущее состояние: last-comment-field v0.3 (в репозитории, ни разу не деплоилось)
 - Forge, TypeScript. Read-only `jira:customField` (string). Устройство — в README.
+- v0.3, отличие от конкурентов для JSM: ещё три read-only поля, только в проектах `service_desk` —
+  `last-customer-reply` (datetime), `last-agent-reply` (datetime), `last-reply-by` (string: Customer/Agent).
+  Агент = право `SERVICEDESK_AGENT` в проекте (`/rest/api/3/user/permission/search`, scope `read:jira-user`),
+  кэш на время тёплого контейнера; `accountType: customer` — клиент без запроса.
+  Ответ = публичный комментарий человека (не `app`); `includeRestricted` не влияет.
+  Время ожидания — через JQL (`"Last customer reply" <= -4h`), живого счётчика нет.
+  В поле даты пишется `created` комментария как есть.
 - Триггеры: `avi:jira:commented:issue`, `avi:jira:deleted:comment`, `avi:forge:installed:app` (старт backfill).
   События на правку комментария в Forge нет.
 - Значение пишется через `PUT /rest/api/3/app/field/{fieldId}/value?generateChangelog=false`,
@@ -45,6 +52,9 @@
 ## Следующие шаги
 1. `forge login`, `forge register`, `forge lint`, `forge deploy`, `forge install` на dev-сайт; проверить вживую:
    поле, триггеры, backfill на сайте с несколькими проектами, страницу админа.
-2. Отличие от конкурентов: JSM — «последний ответ клиента / агента», время с последнего ответа.
+   Для JSM отдельно: работает ли проверка агента от имени приложения; принимает ли Jira `created`
+   комментария как значение datetime-поля; что будет при записи в задачу вне контекста поля
+   (админ ограничил поле частью проектов); JQL `"Last reply by" ~ Customer`.
+2. Возможное развитие JSM: живой счётчик «2 ч назад», текст последнего ответа клиента / агента.
 3. Листинг: документация, privacy policy, EULA, поддержка, скриншоты, security-анкета.
    Цена: бесплатно до 10 пользователей, дальше недорогая подписка.

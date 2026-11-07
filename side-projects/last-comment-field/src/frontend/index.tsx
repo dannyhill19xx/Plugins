@@ -134,7 +134,7 @@ function BackfillPanel() {
   return (
     <Stack space="space.200">
       <Heading size="medium">Existing issues</Heading>
-      <Text>Recompute the field for every issue on the site. Runs in the background, project by project.</Text>
+      <Text>Recompute the app's fields for every issue on the site. Runs in the background, project by project.</Text>
       {state ? (
         <Stack space="space.100">
           <Lozenge appearance={STATUS_APPEARANCE[state.status]}>{state.status}</Lozenge>

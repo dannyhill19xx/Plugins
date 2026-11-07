@@ -1,18 +1,19 @@
 import Resolver from '@forge/resolver';
 import { BatchEvent, cancelBackfill, getBackfillState, handleBatch, startBackfill } from './backfill';
-import { computeValue, writeValues } from './jira';
+import { computeValues, getIssueProject, writeIssueValues } from './jira';
 import { loadSettings, saveSettings } from './settings';
 
-/** Trigger: a comment was added or deleted → recompute the field for that issue. */
+/** Trigger: a comment was added or deleted → recompute the fields for that issue. */
 export async function onComment(event: any): Promise<void> {
   const issueId: string | undefined = event?.issue?.id;
   if (!issueId) {
     console.warn('Event without issue id', JSON.stringify(event).slice(0, 500));
     return;
   }
-  const value = await computeValue(issueId, await loadSettings());
-  await writeValues(new Map([[issueId, value]]));
-  console.log(`Issue ${issueId}: last comment field updated`);
+  const project = await getIssueProject(issueId);
+  const values = await computeValues(issueId, await loadSettings(), project);
+  await writeIssueValues([[issueId, values]]);
+  console.log(`Issue ${issueId}: fields updated${project.isServiceProject ? ' (with replies)' : ''}`);
 }
 
 /** Trigger: app installed → fill the field for existing issues. */
