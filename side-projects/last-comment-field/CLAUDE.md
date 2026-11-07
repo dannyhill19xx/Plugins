@@ -26,20 +26,25 @@
 - Общий каркас: Forge, лицензирование, шаблон документации и листинга.
 - Отсечение: <~30 установок и ноль вопросов за 60 дней после релиза → заморозить.
 
-## Текущее состояние: last-comment-field v0.1
-- Forge, TypeScript. Read-only `jira:customField` (string).
-- Триггеры: `avi:jira:commented:issue`, `avi:jira:deleted:comment`.
+## Текущее состояние: last-comment-field v0.2 (в репозитории, ни разу не деплоилось)
+- Forge, TypeScript. Read-only `jira:customField` (string). Устройство — в README.
+- Триггеры: `avi:jira:commented:issue`, `avi:jira:deleted:comment`, `avi:forge:installed:app` (старт backfill).
   События на правку комментария в Forge нет.
-- Значение пишется через `PUT /rest/api/3/app/field/{fieldId}/value?generateChangelog=false`.
+- Значение пишется через `PUT /rest/api/3/app/field/{fieldId}/value?generateChangelog=false`,
+  в backfill — одним запросом на пачку (значения сгруппированы).
 - ID поля ищется по `schema.custom`, оканчивающемуся на `/static/last-comment-field`.
 - Комментарии с `visibility` и внутренние JSM (`jsdPublic === false`) пропускаются — не допустить утечки.
-- Проверено: `tsc --noEmit`, манифест против JSON-схемы @forge/manifest.
-  `forge lint` / `deploy` ещё не запускались (нужна авторизация).
+  Включаются только явной настройкой админа `includeRestricted`.
+- Backfill: очередь `backfill-queue`, цепочка событий (проект → страницы по 50 через `/rest/api/3/search/jql`),
+  состояние в KVS `backfill-state`, 429 → `InvocationError` с `retryAfter`.
+- Настройки: KVS `settings`, страница `jira:adminPage` (UI Kit, `useAsConfig`).
+- Проверено: `npm run check` — tsc, юнит-тесты, сценарии на эмуляции Jira/KVS/очереди
+  (`node:test` + module mocks), манифест против JSON-схемы @forge/manifest.
+  `forge lint` / `deploy` ещё не запускались (нужна авторизация) — эмуляция не заменяет живую проверку.
 
 ## Следующие шаги
-1. `forge login`, `forge register`, `forge lint`, `forge deploy`, `forge install` на dev-сайт; проверить вживую.
-2. Backfill существующих задач через очередь Forge (JQL пачками, с учётом лимитов).
-3. Страница настроек админа: длина, автор/дата, учёт внутренних комментариев.
-4. Отличие от конкурентов: JSM — «последний ответ клиента / агента», время с последнего ответа.
-5. Листинг: документация, privacy policy, EULA, поддержка, скриншоты, security-анкета.
+1. `forge login`, `forge register`, `forge lint`, `forge deploy`, `forge install` на dev-сайт; проверить вживую:
+   поле, триггеры, backfill на сайте с несколькими проектами, страницу админа.
+2. Отличие от конкурентов: JSM — «последний ответ клиента / агента», время с последнего ответа.
+3. Листинг: документация, privacy policy, EULA, поддержка, скриншоты, security-анкета.
    Цена: бесплатно до 10 пользователей, дальше недорогая подписка.

@@ -8,17 +8,50 @@ modules:
       type: string
       readOnly: true
 
-  # Recalculate the field whenever comments change.
   trigger:
+    # Recalculate the field whenever comments change.
     - key: comment-trigger
       function: on-comment
       events:
         - avi:jira:commented:issue
         - avi:jira:deleted:comment
+    # Fill the field for existing issues right after install.
+    - key: install-trigger
+      function: on-installed
+      events:
+        - avi:forge:installed:app
+
+  # Backfill runs as a chain of queue events, one page of issues per event.
+  consumer:
+    - key: backfill-consumer
+      queue: backfill-queue
+      resolver:
+        function: backfill-worker
+        method: backfill-batch
+
+  jira:adminPage:
+    - key: lcf-admin
+      title: Last comment field
+      resource: admin-ui
+      resolver:
+        function: admin-resolver
+      render: native
+      useAsConfig: true
 
   function:
     - key: on-comment
       handler: index.onComment
+    - key: on-installed
+      handler: index.onInstalled
+    - key: backfill-worker
+      handler: index.backfillConsumer
+      timeoutSeconds: 120
+    - key: admin-resolver
+      handler: index.adminResolver
+
+resources:
+  - key: admin-ui
+    path: src/frontend/index.tsx
 
 app:
   id: ari:cloud:ecosystem::app/REPLACE-ME   # filled in by `forge register`
@@ -29,3 +62,4 @@ permissions:
   scopes:
     - read:jira-work
     - write:jira-work
+    - storage:app

@@ -1,17 +1,33 @@
 {
   "name": "last-comment-field",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "lint": "forge lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --experimental-test-module-mocks --test test/*.test.ts",
+    "validate-manifest": "node scripts/validate-manifest.mjs",
+    "check": "npm run typecheck && npm test && npm run validate-manifest"
   },
   "dependencies": {
-    "@forge/api": "^8.4.0"
+    "@forge/api": "^8.4.0",
+    "@forge/bridge": "^7.2.1",
+    "@forge/events": "^3.0.9",
+    "@forge/kvs": "^2.1.1",
+    "@forge/react": "^12.4.0",
+    "@forge/resolver": "^2.0.2",
+    "react": "^18.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.6.0",
-    "@types/node": "^22.0.0"
+    "@forge/manifest": "^13.8.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.31",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "js-yaml": "^5.5.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.6.0"
   }
 }
