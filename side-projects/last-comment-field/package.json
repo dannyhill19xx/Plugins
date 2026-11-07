@@ -1,0 +1,17 @@
+{
+  "name": "last-comment-field",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "lint": "forge lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@forge/api": "^8.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  }
+}

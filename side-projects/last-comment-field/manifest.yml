@@ -1,0 +1,31 @@
+modules:
+  # Read-only custom field. Values are written only by this app
+  # via PUT /rest/api/3/app/field/{fieldId}/value.
+  jira:customField:
+    - key: last-comment-field
+      name: Last comment
+      description: Text of the most recent public comment on the issue
+      type: string
+      readOnly: true
+
+  # Recalculate the field whenever comments change.
+  trigger:
+    - key: comment-trigger
+      function: on-comment
+      events:
+        - avi:jira:commented:issue
+        - avi:jira:deleted:comment
+
+  function:
+    - key: on-comment
+      handler: index.onComment
+
+app:
+  id: ari:cloud:ecosystem::app/REPLACE-ME   # filled in by `forge register`
+  runtime:
+    name: nodejs22.x
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
